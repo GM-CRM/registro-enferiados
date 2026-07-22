@@ -7,53 +7,82 @@
   <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js'></script>
   <style>
     :root {
-      --bg-dark: #121212; --card-bg: #1e1e1e;
-      --accent-yellow: #fdd835; --accent-blue: #1e88e5; --text-main: #ffffff;
-    }
-    body {
-      background-color: var(--bg-dark); color: var(--text-main);
-      font-family: 'Montserrat', sans-serif; padding: 20px;
-      display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; margin: 0;
-    }
-    .panel {
-      background-color: var(--card-bg); padding: 25px; border-radius: 12px;
-      width: 100%; max-width: 450px; box-shadow: 0 4px 20px rgba(0,0,0,0.5);
-      border-top: 4px solid var(--accent-yellow);
+      --accent-yellow: #fdd835; 
+      --accent-blue: #00f0ff; 
+      --accent-pink: #ff007f;
+      --text-main: #ffffff;
     }
     
-    /* Estilo corporativo para el título */
-    h2 { text-align: center; margin-bottom: 25px; font-size: 1.6em; text-transform: uppercase; }
-    .enferiados-text {
-      background: linear-gradient(90deg, #ff007f, #00f0ff);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      font-weight: 900;
-      font-style: italic;
-      letter-spacing: 1px;
+    /* Fondo premium nocturno */
+    body {
+      background: radial-gradient(circle at top right, #2a0845, #121212, #0d021c);
+      color: var(--text-main);
+      font-family: 'Montserrat', sans-serif; 
+      padding: 20px;
+      display: flex; flex-wrap: wrap; gap: 30px; justify-content: center; margin: 0;
+      min-height: 100vh;
     }
 
-    label { display: block; margin-top: 12px; font-size: 0.85em; color: #aaa; font-weight: 600; }
-    input, select, button {
-      width: 100%; padding: 10px; margin-top: 5px; border-radius: 6px;
-      border: 1px solid #333; background: #2a2a2a; color: white; box-sizing: border-box;
+    /* Efecto Glassmorphism (Cristal) para los paneles */
+    .panel, #calendar {
+      background: rgba(30, 30, 30, 0.4);
+      backdrop-filter: blur(15px);
+      -webkit-backdrop-filter: blur(15px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 16px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
     }
-    input:focus, select:focus { outline: none; border-color: var(--accent-blue); }
-    .time-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+    .panel {
+      padding: 35px; 
+      width: 100%; max-width: 450px; 
+      border-top: 4px solid var(--accent-pink);
+    }
     
+    /* Tipografía Corporativa */
+    h2 { text-align: center; margin-bottom: 30px; font-size: 1.8em; text-transform: uppercase; letter-spacing: 1px; }
+    .enferiados-text {
+      background: linear-gradient(90deg, var(--accent-pink), var(--accent-blue));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      font-weight: 900; font-style: italic;
+    }
+
+    label { display: block; margin-top: 15px; font-size: 0.85em; color: #bbb; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;}
+    
+    /* Inputs mejorados */
+    input, select {
+      width: 100%; padding: 12px; margin-top: 8px; border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.1); 
+      background: rgba(0,0,0,0.5); color: white; box-sizing: border-box;
+      font-family: 'Montserrat', sans-serif; transition: all 0.3s;
+    }
+    input:focus, select:focus { outline: none; border-color: var(--accent-blue); box-shadow: 0 0 10px rgba(0, 240, 255, 0.2); background: rgba(0,0,0,0.7); }
+    
+    .time-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+    
+    /* Botón con Glow */
     button {
-      background-color: var(--accent-blue); color: white; font-weight: bold; border: none;
-      margin-top: 20px; cursor: pointer; transition: 0.3s; padding: 12px; font-size: 1.05em;
+      background: linear-gradient(90deg, #1e88e5, var(--accent-blue));
+      color: #000; font-weight: 900; border: none; text-transform: uppercase; letter-spacing: 1px;
+      margin-top: 30px; cursor: pointer; transition: 0.3s; padding: 15px; font-size: 1.1em;
+      border-radius: 8px; box-shadow: 0 4px 15px rgba(0, 240, 255, 0.4);
     }
-    button:disabled { background-color: #444; color: #777; cursor: not-allowed; }
-    button:hover:not(:disabled) { background-color: #1565c0; }
+    button:disabled { background: #333; color: #666; cursor: not-allowed; box-shadow: none; }
+    button:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0, 240, 255, 0.6); }
     
-    .loader { display: none; text-align: center; margin-top: 15px; color: var(--accent-yellow); font-size: 0.9em; }
-    .error-msg { display: none; color: #ff4d4d; font-size: 0.85em; margin-top: 10px; text-align: center; font-weight: bold; }
+    .loader { display: none; text-align: center; margin-top: 20px; color: var(--accent-yellow); font-size: 0.9em; font-weight: bold;}
+    .error-msg { display: none; background: rgba(255, 0, 0, 0.1); border: 1px solid #ff4d4d; border-radius: 8px; padding: 10px; color: #ff4d4d; font-size: 0.85em; margin-top: 20px; text-align: center; font-weight: bold; }
     
-    #calendar { max-width: 500px; width: 100%; background: var(--card-bg); padding: 15px; border-radius: 12px; }
-    .fc-theme-standard td, .fc-theme-standard th { border-color: #444; }
-    .fc .fc-toolbar-title { font-size: 1.2em; color: var(--text-main); }
-    .fc .fc-button-primary { background-color: var(--accent-blue); border-color: var(--accent-blue); }
+    /* Calendario adaptado a tema oscuro premium */
+    #calendar { max-width: 500px; width: 100%; padding: 25px; }
+    .fc-theme-standard td, .fc-theme-standard th { border-color: rgba(255,255,255,0.1); }
+    .fc .fc-toolbar-title { font-size: 1.3em; color: var(--text-main); font-weight: 700; }
+    .fc .fc-button-primary { background-color: transparent; border: 1px solid var(--accent-blue); color: var(--accent-blue); text-transform: uppercase; font-size: 0.8em; font-weight: bold;}
+    .fc .fc-button-primary:hover { background-color: var(--accent-blue); color: #000; }
+    .fc .fc-button-primary:not(:disabled).fc-button-active { background-color: var(--accent-blue); color: #000; }
+    .fc-list-event:hover td { background-color: rgba(255,255,255,0.05); }
+    .fc-list-day-cushion { background-color: rgba(0,0,0,0.3) !important; }
   </style>
 </head>
 <body>
@@ -63,10 +92,10 @@
     <form id="registroForm">
       
       <label>Vendedor</label>
-      <input type="text" id="vendedor" required placeholder="Tu nombre...">
+      <input type="text" id="vendedor" required placeholder="Nombre del asesor...">
 
       <label>Cliente (Clave, Comercial o Fiscal)</label>
-      <input list="listaClientes" id="clienteInput" required placeholder="Buscar coincidencia...">
+      <input list="listaClientes" id="clienteInput" required placeholder="🔍 Escribe para buscar...">
       <datalist id="listaClientes"></datalist>
 
       <label>Paquete Publicitario (Dinámico)</label>
@@ -88,21 +117,26 @@
       <label>Fecha de Activación</label>
       <input type="date" id="fecha" required min="2026-08-07" max="2026-08-30">
 
+      <!-- AQUÍ ESTÁ LA SOLUCIÓN: Cambiamos de 'input time' a 'select' para inyectar solo las horas permitidas -->
       <div class="time-grid">
         <div>
           <label>Hora Inicio</label>
-          <input type="time" id="horaInicio" required disabled>
+          <select id="horaInicio" required disabled>
+            <option value="">--:--</option>
+          </select>
         </div>
         <div>
           <label>Hora Fin</label>
-          <input type="time" id="horaFin" required disabled>
+          <select id="horaFin" required disabled>
+            <option value="">--:--</option>
+          </select>
         </div>
       </div>
 
       <div id="errorMsg" class="error-msg"></div>
       
-      <button type="submit" id="btnSubmit" disabled>Guardar Registro</button>
-      <div id="loading" class="loader">Procesando y validando agenda...</div>
+      <button type="submit" id="btnSubmit" disabled>Confirmar Registro</button>
+      <div id="loading" class="loader">Validando disponibilidad en el servidor...</div>
     </form>
   </div>
 
@@ -115,17 +149,16 @@
     let reservasGlobales = [];
     let calendar;
 
-    // Diccionario de reglas operativas
+    // Diccionario de reglas operativas (formato 24h)
     const reglasProgramas = {
-      "Los 40 - Playlist": { min: "15:00", max: "16:00" },
-      "VOX - Peace and Vox": { min: "17:00", max: "20:00" },
-      "Ke Buena - Las Tóxicas": { min: "15:00", max: "19:00" },
-      "Los 40 - Aesthetic": { min: "16:00", max: "18:00" },
-      "Ke Buena - Ke Buen Rollo": { min: "13:00", max: "15:00" },
-      "W Radio - Táctica 100.1": { min: "15:00", max: "17:00" }
+      "Los 40 - Playlist": { min: 15, max: 16 },
+      "VOX - Peace and Vox": { min: 17, max: 20 },
+      "Ke Buena - Las Tóxicas": { min: 15, max: 19 },
+      "Los 40 - Aesthetic": { min: 16, max: 18 },
+      "Ke Buena - Ke Buen Rollo": { min: 13, max: 15 },
+      "W Radio - Táctica 100.1": { min: 15, max: 17 }
     };
 
-    // Función auxiliar para extraer el formato HH:mm de los datos crudos
     function formatearHora(horaCruda) {
       if (!horaCruda) return "00:00";
       if (horaCruda.includes('T')) {
@@ -142,7 +175,8 @@
         initialDate: '2026-08-07',
         headerToolbar: { left: 'prev,next', center: 'title', right: 'listWeek,timeGridDay' },
         height: 'auto',
-        locale: 'es'
+        locale: 'es',
+        noEventsText: 'No hay activaciones registradas'
       });
       calendar.render();
 
@@ -174,10 +208,10 @@
 
         reservasGlobales.forEach(r => {
           calendar.addEvent({
-            title: `OCUPADO: ${r.programa}`,
+            title: `OCUPADO: ${r.programa} (${r.cliente.split('|')[1]?.trim() || 'Cliente'})`,
             start: `${r.fecha}T${r.horaInicio}`,
             end: `${r.fecha}T${r.horaFin}`,
-            color: '#e53935'
+            color: '#ff007f'
           });
         });
 
@@ -186,29 +220,44 @@
       }
     });
 
-    // Lógica Matemática: Control del programa y horarios permitidos
-    document.getElementById('programa').addEventListener('change', function(e) {
-      const programa = e.target.value;
+    // Lógica para poblar dinámicamente los menús desplegables de hora
+    function actualizarOpcionesDeHora(programa) {
       const hInicio = document.getElementById('horaInicio');
       const hFin = document.getElementById('horaFin');
+      
+      // Limpiar opciones previas
+      hInicio.innerHTML = '<option value="">--:--</option>';
+      hFin.innerHTML = '<option value="">--:--</option>';
 
-      if (reglasProgramas[programa]) {
-        hInicio.disabled = false;
-        hFin.disabled = false;
-        hInicio.min = reglasProgramas[programa].min;
-        hInicio.max = reglasProgramas[programa].max;
-        hFin.min = reglasProgramas[programa].min;
-        hFin.max = reglasProgramas[programa].max;
-      } else {
-        hInicio.disabled = true;
-        hFin.disabled = true;
+      if (!programa || !reglasProgramas[programa]) {
+        hInicio.disabled = true; hFin.disabled = true;
+        return;
       }
-      hInicio.value = "";
-      hFin.value = "";
+
+      hInicio.disabled = false; hFin.disabled = false;
+      const limites = reglasProgramas[programa];
+
+      // Inyectar bloques de 30 minutos estrictamente dentro del rango permitido
+      for (let i = limites.min; i <= limites.max; i++) {
+        let horaStr = i.toString().padStart(2, '0');
+        if (i < limites.max) {
+          hInicio.add(new Option(`${horaStr}:00`, `${horaStr}:00`));
+          hInicio.add(new Option(`${horaStr}:30`, `${horaStr}:30`));
+          hFin.add(new Option(`${horaStr}:00`, `${horaStr}:00`));
+          hFin.add(new Option(`${horaStr}:30`, `${horaStr}:30`));
+        } else {
+          // Asegurar que la hora límite máxima esté disponible
+          hInicio.add(new Option(`${horaStr}:00`, `${horaStr}:00`));
+          hFin.add(new Option(`${horaStr}:00`, `${horaStr}:00`));
+        }
+      }
+    }
+
+    document.getElementById('programa').addEventListener('change', function(e) {
+      actualizarOpcionesDeHora(e.target.value);
       evaluarCondicionesGuardado();
     });
 
-    // Lógica Matemática: Detección estricta de empalmes
     function evaluarCondicionesGuardado() {
       const btn = document.getElementById('btnSubmit');
       const errorMsg = document.getElementById('errorMsg');
@@ -218,51 +267,37 @@
       const hFin = document.getElementById('horaFin').value;
       const programa = document.getElementById('programa').value;
 
-      // Resetear estado
       btn.disabled = true;
       errorMsg.style.display = 'none';
 
       if (!fecha || !hInicio || !hFin || !programa) return;
 
-      // 1. Validar cronología lógica
       if (hInicio >= hFin) {
-        errorMsg.textContent = "Error: La hora de inicio no puede ser mayor o igual a la de fin.";
+        errorMsg.innerHTML = "⚠️ <b>Horario Inválido:</b> La hora de inicio debe ser menor a la hora de fin.";
         errorMsg.style.display = 'block';
         return;
       }
 
-      // 2. Validar reglas del programa seleccionado
-      const limites = reglasProgramas[programa];
-      if (hInicio < limites.min || hFin > limites.max) {
-        errorMsg.textContent = `Error: Horario fuera de rango para este programa (${limites.min} a ${limites.max}).`;
-        errorMsg.style.display = 'block';
-        return;
-      }
-
-      // 3. Evaluar colisiones con la base de datos
+      // Evaluar colisiones de empalme
       const hayColision = reservasGlobales.some(r => {
         if (r.fecha === fecha) {
-          // Fórmula matemática de intersección de rangos
           return (hInicio < r.horaFin && hFin > r.horaInicio);
         }
         return false;
       });
 
       if (hayColision) {
-        errorMsg.textContent = "⛔ BLOQUEADO: Ya existe una activación en este horario exacto.";
+        errorMsg.innerHTML = "⛔ <b>BLOQUEADO:</b> El horario seleccionado choca con una activación existente en el calendario.";
         errorMsg.style.display = 'block';
       } else {
-        // Si pasa todas las validaciones matemáticas, se libera el botón
-        btn.disabled = false;
+        btn.disabled = false; // Todo correcto, liberar botón
       }
     }
 
-    // Escuchar cambios para accionar la lógica matemática
     document.getElementById('fecha').addEventListener('change', evaluarCondicionesGuardado);
     document.getElementById('horaInicio').addEventListener('change', evaluarCondicionesGuardado);
     document.getElementById('horaFin').addEventListener('change', evaluarCondicionesGuardado);
 
-    // Enviar Formulario
     document.getElementById('registroForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       
@@ -282,10 +317,10 @@
 
       try {
         await fetch(API_URL, { method: 'POST', body: JSON.stringify(datos) });
-        alert('Registro guardado exitosamente.');
+        alert('✅ Activación agendada y registrada con éxito.');
         window.location.reload(); 
       } catch (error) {
-        alert('Error de conexión al guardar.');
+        alert('❌ Error de red al intentar comunicarse con Google Sheets.');
         btn.disabled = false;
       } finally {
         loader.style.display = 'none';
