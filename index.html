@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Registro ENFERIADOS 2026</title>
+  <style>
+    :root {
+      --bg-dark: #121212;
+      --card-bg: #1e1e1e;
+      --accent-yellow: #fdd835;
+      --accent-blue: #1e88e5;
+      --text-main: #ffffff;
+    }
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      font-family: 'Montserrat', sans-serif;
+      padding: 20px;
+      display: flex;
+      justify-content: center;
+      margin: 0;
+    }
+    .form-container {
+      background-color: var(--card-bg);
+      padding: 30px;
+      border-radius: 12px;
+      width: 100%;
+      max-width: 500px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+      border-top: 4px solid var(--accent-yellow);
+    }
+    h2 { text-align: center; margin-bottom: 25px; color: var(--text-main); }
+    label { display: block; margin-top: 15px; font-size: 0.9em; color: #aaa; }
+    input, select, button {
+      width: 100%; padding: 12px; margin-top: 8px;
+      border-radius: 6px; border: 1px solid #333;
+      background: #2a2a2a; color: white; box-sizing: border-box;
+      font-size: 1em;
+    }
+    input:focus, select:focus { outline: none; border-color: var(--accent-blue); }
+    button {
+      background-color: var(--accent-blue);
+      color: white; font-weight: bold; border: none;
+      margin-top: 25px; cursor: pointer; transition: 0.3s;
+    }
+    button:hover { background-color: #1565c0; }
+    .loader { display: none; text-align: center; margin-top: 15px; color: var(--accent-yellow); font-size: 0.9em; }
+  </style>
+</head>
+<body>
+
+  <div class="form-container">
+    <h2>Registro ENFERIADOS 2026</h2>
+    <form id="registroForm">
+      
+      <label>Vendedor</label>
+      <input type="text" id="vendedor" required placeholder="Tu nombre...">
+
+      <label>Buscar Cliente (Clave, Comercial o Fiscal)</label>
+      <input list="listaClientes" id="clienteInput" required placeholder="Escribe para buscar coincidencia...">
+      <datalist id="listaClientes">
+        <!-- El catálogo se carga dinámicamente -->
+      </datalist>
+
+      <label>Paquete Publicitario</label>
+      <select id="paquete" required>
+        <option value="">Selecciona un paquete...</option>
+        <option value="Paquete 1">Paquete 1 - $14,300</option>
+        <option value="Paquete 2">Paquete 2 - $18,500</option>
+        <option value="Paquete 3">Paquete 3 - $21,500</option>
+      </select>
+
+      <label>Fecha del Evento (Agosto 2026)</label>
+      <!-- Se restringe la fecha del 7 al 30 de agosto según las fechas de operación -->
+      <input type="date" id="fecha" required min="2026-08-07" max="2026-08-30">
+
+      <button type="submit" id="btnSubmit">Guardar Registro</button>
+      <div id="loading" class="loader">Guardando registro en la base de datos...</div>
+    </form>
+  </div>
+
+  <script>
+    // --- IMPORTANTE: PEGA TU URL DE APPS SCRIPT AQUÍ ABAJO ---
+    const API_URL = 'https://script.google.com/macros/s/AKfycbyF7BjEB7FA0Asm3MrQMV-4D41V42GOMqgHgZ95YAodPruJ9ZMewvoolO2cb4UbiA/exec';
+    
+    const datalist = document.getElementById('listaClientes');
+    const form = document.getElementById('registroForm');
+    const btnSubmit = document.getElementById('btnSubmit');
+    const loading = document.getElementById('loading');
+
+    // Descargar el catálogo de clientes al abrir la página
+    document.addEventListener('DOMContentLoaded', async () => {
+      try {
+        const response = await fetch(API_URL);
+        const clientes = await response.json();
+        
+        clientes.forEach(c => {
+          let option = document.createElement('option');
+          // Unificamos clave, comercial y fiscal para que el buscador nativo filtre por cualquiera de los 3
+          option.value = `${c.clave} | ${c.comercial} | ${c.fiscal}`;
+          datalist.appendChild(option);
+        });
+      } catch (error) {
+        console.error("Error al cargar el catálogo de clientes:", error);
+      }
+    });
+
+    // Enviar los datos capturados a Google Sheets
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      btnSubmit.disabled = true;
+      loading.style.display = 'block';
+
+      const datos = {
+        vendedor: document.getElementById('vendedor').value,
+        clienteStr: document.getElementById('clienteInput').value,
+        paquete: document.getElementById('paquete').value,
+        fecha: document.getElementById('fecha').value
+      };
+
+      try {
+        await fetch(API_URL, {
+          method: 'POST',
+          body: JSON.stringify(datos)
+        });
+        
+        alert('Registro guardado exitosamente');
+        form.reset();
+      } catch (error) {
+        console.error("Error al guardar:", error);
+        alert('Hubo un error al guardar. Revisa tu conexión.');
+      } finally {
+        btnSubmit.disabled = false;
+        loading.style.display = 'none';
+      }
+    });
+  </script>
+</body>
+</html>
