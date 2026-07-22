@@ -426,12 +426,12 @@
         </div>
         <select id="programa" required>
           <option value="">Selecciona un programa...</option>
-          <option value="Los 40 - Playlist">Los 40 - Playlist (3:00pm - 4:00pm)</option>
+          <option value="LOS 40 - Playlist">LOS 40 - Playlist (3:00pm - 4:00pm)</option>
           <option value="VOX - Peace and Vox">VOX - Peace and Vox (5:00pm - 8:00pm)</option>
-          <option value="Ke Buena - Las Tóxicas">Ke Buena - Las Tóxicas (3:00pm - 7:00pm)</option>
-          <option value="Los 40 - Aesthetic">Los 40 - Aesthetic (4:00pm - 6:00pm)</option>
-          <option value="Ke Buena - Ke Buen Rollo">Ke Buena - Ke Buen Rollo (1:00pm - 3:00pm)</option>
-          <option value="W Radio - Táctica 100.1">W Radio - Táctica 100.1 (3:00pm - 5:00pm)</option>
+          <option value="KE BUENA - Las Tóxicas">KE BUENA - Las Tóxicas (3:00pm - 7:00pm)</option>
+          <option value="LOS 40 - Aesthetic">LOS 40 - Aesthetic (4:00pm - 6:00pm)</option>
+          <option value="KE BUENA - Ke Buen Rollo">KE BUENA - Ke Buen Rollo (1:00pm - 3:00pm)</option>
+          <option value="W RADIO - Táctica 100.1">W RADIO - Táctica 100.1 (3:00pm - 5:00pm)</option>
         </select>
 
         <label>Fecha de activación</label>
@@ -481,12 +481,12 @@
       <div class="calendar-filters">
         <select id="filtroPrograma" class="filter-input">
           <option value="">Todos los programas</option>
-          <option value="Los 40 - Playlist">Los 40 - Playlist</option>
+          <option value="LOS 40 - Playlist">LOS 40 - Playlist</option>
           <option value="VOX - Peace and Vox">VOX - Peace and Vox</option>
-          <option value="Ke Buena - Las Tóxicas">Ke Buena - Las Tóxicas</option>
-          <option value="Los 40 - Aesthetic">Los 40 - Aesthetic</option>
-          <option value="Ke Buena - Ke Buen Rollo">Ke Buena - Ke Buen Rollo</option>
-          <option value="W Radio - Táctica 100.1">W Radio - Táctica 100.1</option>
+          <option value="KE BUENA - Las Tóxicas">KE BUENA - Las Tóxicas</option>
+          <option value="LOS 40 - Aesthetic">LOS 40 - Aesthetic</option>
+          <option value="KE BUENA - Ke Buen Rollo">KE BUENA - Ke Buen Rollo</option>
+          <option value="W RADIO - Táctica 100.1">W RADIO - Táctica 100.1</option>
         </select>
         <input type="text" id="filtroVendedor" class="filter-input" placeholder="Filtrar por vendedor...">
       </div>
@@ -518,12 +518,12 @@
   let calendar;
 
   const reglasProgramas = {
-    "Los 40 - Playlist": { min: 15, max: 16, dias: [1, 2, 3, 4, 5] },
+    "LOS 40 - Playlist": { min: 15, max: 16, dias: [1, 2, 3, 4, 5] },
     "VOX - Peace and Vox": { min: 17, max: 20, dias: [1, 2, 3, 4, 5] },
-    "Ke Buena - Las Tóxicas": { min: 15, max: 19, dias: [1, 2, 3, 4, 5, 6] },
-    "Los 40 - Aesthetic": { min: 16, max: 18, dias: [1, 2, 3, 4, 5] },
-    "Ke Buena - Ke Buen Rollo": { min: 13, max: 15, dias: [1, 2, 3, 4, 5] },
-    "W Radio - Táctica 100.1": { min: 15, max: 17, dias: [1, 2, 3, 4, 5] }
+    "KE BUENA - Las Tóxicas": { min: 15, max: 19, dias: [1, 2, 3, 4, 5, 6] },
+    "LOS 40 - Aesthetic": { min: 16, max: 18, dias: [1, 2, 3, 4, 5] },
+    "KE BUENA - Ke Buen Rollo": { min: 13, max: 15, dias: [1, 2, 3, 4, 5] },
+    "W RADIO - Táctica 100.1": { min: 15, max: 17, dias: [1, 2, 3, 4, 5] }
   };
 
   // Barras del ecualizador decorativo
