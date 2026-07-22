@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Registro ENFERIADOS 2026</title>
+  <!-- FullCalendar CSS & JS -->
   <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js'></script>
   <style>
     :root {
@@ -19,11 +20,11 @@
       color: var(--text-main);
       font-family: 'Montserrat', sans-serif; 
       padding: 20px;
-      display: flex; flex-wrap: wrap; gap: 30px; justify-content: center; margin: 0;
+      display: flex; flex-wrap: wrap; gap: 30px; justify-content: center; align-items: flex-start; margin: 0;
       min-height: 100vh;
     }
 
-    .panel, #calendar {
+    .panel, .calendar-card {
       background: rgba(30, 30, 30, 0.4);
       backdrop-filter: blur(15px);
       -webkit-backdrop-filter: blur(15px);
@@ -62,7 +63,7 @@
       background: linear-gradient(90deg, #1e88e5, var(--accent-blue));
       color: #000; font-weight: 900; border: none; text-transform: uppercase; letter-spacing: 1px;
       margin-top: 30px; cursor: pointer; transition: 0.3s; padding: 15px; font-size: 1.1em;
-      border-radius: 8px; box-shadow: 0 4px 15px rgba(0, 240, 255, 0.4);
+      border-radius: 8px; box-shadow: 0 4px 15px rgba(0, 240, 255, 0.4); width: 100%;
     }
     button:disabled { background: #333; color: #666; cursor: not-allowed; box-shadow: none; }
     button:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0, 240, 255, 0.6); }
@@ -70,74 +71,73 @@
     .loader { display: none; text-align: center; margin-top: 20px; color: var(--accent-yellow); font-size: 0.9em; font-weight: bold;}
     .error-msg { display: none; background: rgba(255, 0, 0, 0.1); border: 1px solid #ff4d4d; border-radius: 8px; padding: 10px; color: #ff4d4d; font-size: 0.85em; margin-top: 20px; text-align: center; font-weight: bold; }
     
-    #calendar { max-width: 500px; width: 100%; padding: 25px; }
+    /* Contenedor del Calendario */
+    .calendar-card { max-width: 600px; width: 100%; padding: 25px; display: flex; flex-direction: column; gap: 15px; }
+    #calendar { width: 100%; }
     .fc-theme-standard td, .fc-theme-standard th { border-color: rgba(255,255,255,0.1); }
-    .fc .fc-toolbar-title { font-size: 1.3em; color: var(--text-main); font-weight: 700; }
-    .fc .fc-button-primary { background-color: transparent; border: 1px solid var(--accent-blue); color: var(--accent-blue); text-transform: uppercase; font-size: 0.8em; font-weight: bold;}
+    .fc .fc-toolbar-title { font-size: 1.2em; color: var(--text-main); font-weight: 700; }
+    .fc .fc-button-primary { background-color: transparent; border: 1px solid var(--accent-blue); color: var(--accent-blue); text-transform: uppercase; font-size: 0.75em; font-weight: bold;}
     .fc .fc-button-primary:hover { background-color: var(--accent-blue); color: #000; }
     .fc .fc-button-primary:not(:disabled).fc-button-active { background-color: var(--accent-blue); color: #000; }
     .fc-list-event:hover td { background-color: rgba(255,255,255,0.05); }
     .fc-list-day-cushion { background-color: rgba(0,0,0,0.3) !important; }
+    .fc-col-header-cell-cushion, .fc-list-day-text, .fc-list-day-side-text { color: var(--text-main) !important; text-decoration: none; }
+    .fc-daygrid-day-number { color: var(--text-main); text-decoration: none; }
 
-    /* =========================================
-       NUEVO: ESTILOS DE LA ALERTA FLOTANTE
-       ========================================= */
-    .custom-alert {
-      position: fixed;
-      top: 30px;
-      left: 50%;
-      transform: translateX(-50%) translateY(-20px);
-      background: rgba(20, 20, 20, 0.85);
-      backdrop-filter: blur(15px);
-      -webkit-backdrop-filter: blur(15px);
-      padding: 18px 30px;
-      border-radius: 12px;
-      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
-      display: flex;
-      align-items: center;
-      gap: 15px;
-      z-index: 9999;
-      opacity: 0;
-      pointer-events: none;
-      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-      font-weight: 600;
-      letter-spacing: 0.5px;
+    /* Botón de Exportación */
+    .btn-export {
+      background: rgba(0, 240, 255, 0.1);
+      border: 1px solid var(--accent-blue);
+      color: var(--accent-blue);
+      font-weight: bold; padding: 12px; border-radius: 8px; cursor: pointer;
+      text-transform: uppercase; letter-spacing: 1px; transition: 0.3s;
+      display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 0;
+      box-shadow: none;
     }
+    .btn-export:hover { background: var(--accent-blue); color: #000; box-shadow: 0 0 15px rgba(0, 240, 255, 0.4); }
 
-    .custom-alert.show {
-      opacity: 1;
-      transform: translateX(-50%) translateY(0);
-      pointer-events: all;
+    /* Ventana Modal Personalizada */
+    .modal-overlay {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.75); backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      display: flex; justify-content: center; align-items: center;
+      z-index: 10000; opacity: 0; pointer-events: none; transition: opacity 0.3s ease;
     }
-
-    .custom-alert.success {
-      border-left: 5px solid var(--accent-blue);
-      border-right: 1px solid rgba(0, 240, 255, 0.2);
-      border-top: 1px solid rgba(0, 240, 255, 0.2);
-      border-bottom: 1px solid rgba(0, 240, 255, 0.2);
+    .modal-overlay.show { opacity: 1; pointer-events: all; }
+    .modal-box {
+      background: rgba(25, 25, 25, 0.9);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 16px;
+      padding: 35px; width: 100%; max-width: 400px; text-align: center;
+      box-shadow: 0 15px 50px rgba(0, 0, 0, 0.8);
+      transform: scale(0.85); transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
-    .custom-alert.success .icon { color: var(--accent-blue); }
-
-    .custom-alert.error {
-      border-left: 5px solid var(--accent-pink);
-      border-right: 1px solid rgba(255, 0, 127, 0.2);
-      border-top: 1px solid rgba(255, 0, 127, 0.2);
-      border-bottom: 1px solid rgba(255, 0, 127, 0.2);
+    .modal-overlay.show .modal-box { transform: scale(1); }
+    .modal-icon { font-size: 3em; margin-bottom: 15px; }
+    .modal-box h3 { margin: 0 0 10px 0; font-size: 1.4em; text-transform: uppercase; letter-spacing: 1px; }
+    .modal-box p { color: #ddd; font-size: 1em; margin-bottom: 30px; line-height: 1.5; }
+    .modal-box button {
+      background: linear-gradient(90deg, #1e88e5, var(--accent-blue));
+      color: #000; font-weight: 900; border: none; padding: 14px 25px;
+      border-radius: 8px; cursor: pointer; text-transform: uppercase; letter-spacing: 1px;
+      transition: 0.3s; width: 100%; font-size: 1.05em;
+      box-shadow: 0 4px 15px rgba(0, 240, 255, 0.4); margin-top: 0;
     }
-    .custom-alert.error .icon { color: var(--accent-pink); }
-
-    .custom-alert .icon { font-size: 1.5em; }
-    .custom-alert .message { font-size: 0.95em; color: #fff; }
+    .modal-box button:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0, 240, 255, 0.6); }
   </style>
 </head>
 <body>
 
-  <!-- =========================================
-       NUEVO: CONTENEDOR DE LA ALERTA FLOTANTE
-       ========================================= -->
-  <div id="customAlert" class="custom-alert">
-    <div id="alertIcon" class="icon"></div>
-    <div id="alertMessage" class="message"></div>
+  <!-- Ventana Modal -->
+  <div id="customModal" class="modal-overlay">
+    <div class="modal-box">
+      <div id="modalIcon" class="modal-icon"></div>
+      <h3 id="modalTitle"></h3>
+      <p id="modalMessage"></p>
+      <button id="modalBtn" type="button">Aceptar</button>
+    </div>
   </div>
 
   <div class="panel">
@@ -167,8 +167,10 @@
         <option value="W Radio - Táctica 100.1">W Radio - Táctica 100.1 (3:00pm - 5:00pm)</option>
       </select>
 
-      <label>Fecha de Activación</label>
-      <input type="date" id="fecha" required min="2026-08-07" max="2026-08-30">
+      <!-- FECHA FLEXIBLE: Permite escribir o seleccionar desde una lista desplegable inteligente -->
+      <label>Fecha de Activación (aaaa-mm-dd)</label>
+      <input type="text" list="listaFechas" id="fecha" required placeholder="Selecciona o escribe aaaa-mm-dd..." disabled>
+      <datalist id="listaFechas"></datalist>
 
       <div class="time-grid">
         <div>
@@ -192,7 +194,11 @@
     </form>
   </div>
 
-  <div id="calendar"></div>
+  <!-- Panel Derecho con Múltiples Vistas de Calendario y Exportación -->
+  <div class="calendar-card">
+    <div id="calendar"></div>
+    <button type="button" id="btnExport" class="btn-export">📥 Exportar Listado a CSV</button>
+  </div>
 
   <script>
     // --- IMPORTANTE: PEGA TU URL DE APPS SCRIPT AQUÍ ---
@@ -210,33 +216,34 @@
       "W Radio - Táctica 100.1": { min: 15, max: 17, dias: [1, 2, 3, 4, 5] }
     };
 
-    // =========================================
-    // NUEVO: FUNCIÓN PARA MOSTRAR LA ALERTA FLOTANTE
-    // =========================================
-    function mostrarAlerta(mensaje, tipo) {
-      const alerta = document.getElementById('customAlert');
-      const icono = document.getElementById('alertIcon');
-      const texto = document.getElementById('alertMessage');
+    function mostrarModal(mensaje, tipo, onOk = null) {
+      const overlay = document.getElementById('customModal');
+      const icon = document.getElementById('modalIcon');
+      const title = document.getElementById('modalTitle');
+      const msg = document.getElementById('modalMessage');
+      const btn = document.getElementById('modalBtn');
 
-      // Limpiar clases previas
-      alerta.className = 'custom-alert show';
+      msg.textContent = mensaje;
       
       if (tipo === 'success') {
-        alerta.classList.add('success');
-        icono.innerHTML = '✔';
+        icon.innerHTML = '✨';
+        title.textContent = '¡Registro Exitoso!';
+        title.style.color = 'var(--accent-blue)';
       } else {
-        alerta.classList.add('error');
-        icono.innerHTML = '✖';
+        icon.innerHTML = '⚠️';
+        title.textContent = 'Aviso de Operación';
+        title.style.color = 'var(--accent-pink)';
       }
 
-      texto.innerHTML = mensaje;
+      overlay.classList.add('show');
+      const newBtn = btn.cloneNode(true);
+      btn.parentNode.replaceChild(newBtn, btn);
 
-      // Ocultar automáticamente después de 4 segundos
-      setTimeout(() => {
-        alerta.classList.remove('show');
-      }, 4000);
+      newBtn.addEventListener('click', () => {
+        overlay.classList.remove('show');
+        if (onOk) onOk();
+      });
     }
-
 
     function formatearHora(horaCruda) {
       if (!horaCruda) return "00:00";
@@ -250,9 +257,13 @@
     document.addEventListener('DOMContentLoaded', async () => {
       const calendarEl = document.getElementById('calendar');
       calendar = new FullCalendar.Calendar(calendarEl, {
-        initialView: 'listWeek',
+        initialView: 'dayGridMonth',
         initialDate: '2026-08-07',
-        headerToolbar: { left: 'prev,next', center: 'title', right: 'listWeek,timeGridDay' },
+        headerToolbar: {
+          left: 'prev,next',
+          center: 'title',
+          right: 'dayGridMonth,timeGridWeek,listWeek'
+        },
         height: 'auto',
         locale: 'es',
         noEventsText: 'No hay activaciones registradas'
@@ -287,7 +298,7 @@
 
         reservasGlobales.forEach(r => {
           calendar.addEvent({
-            title: `OCUPADO: ${r.programa} (${r.cliente.split('|')[1]?.trim() || 'Cliente'})`,
+            title: `${r.programa} (${r.cliente.split('|')[1]?.trim() || 'Cliente'})`,
             start: `${r.fecha}T${r.horaInicio}`,
             end: `${r.fecha}T${r.horaFin}`,
             color: '#ff007f'
@@ -298,6 +309,43 @@
         console.error("Error cargando API:", error);
       }
     });
+
+    // Poblar dinámicamente las fechas válidas de agosto según el programa seleccionado
+    function actualizarFechasDisponibles(programa) {
+      const inputFecha = document.getElementById('fecha');
+      const datalist = document.getElementById('listaFechas');
+      
+      datalist.innerHTML = '';
+      inputFecha.value = '';
+
+      if (!programa || !reglasProgramas[programa]) {
+        inputFecha.disabled = true;
+        return;
+      }
+
+      inputFecha.disabled = false;
+      const reglas = reglasProgramas[programa];
+
+      // Rango oficial: 7 al 30 de agosto de 2026
+      let inicio = new Date(2026, 7, 7);
+      let fin = new Date(2026, 7, 30);
+
+      let current = new Date(inicio);
+      while (current <= fin) {
+        let diaSemana = current.getDay(); // 0: Dom, 1: Lun ... 6: Sáb
+        if (reglas.dias.includes(diaSemana)) {
+          let yyyy = current.getFullYear();
+          let mm = String(current.getMonth() + 1).padStart(2, '0');
+          let dd = String(current.getDate()).padStart(2, '0');
+          let fechaStr = `${yyyy}-${mm}-${dd}`;
+          
+          let opt = document.createElement('option');
+          opt.value = fechaStr;
+          datalist.appendChild(opt);
+        }
+        current.setDate(current.getDate() + 1);
+      }
+    }
 
     function actualizarOpcionesDeHora(programa) {
       const hInicio = document.getElementById('horaInicio');
@@ -329,7 +377,9 @@
     }
 
     document.getElementById('programa').addEventListener('change', function(e) {
-      actualizarOpcionesDeHora(e.target.value);
+      const prog = e.target.value;
+      actualizarFechasDisponibles(prog);
+      actualizarOpcionesDeHora(prog);
       evaluarCondicionesGuardado();
     });
 
@@ -346,6 +396,9 @@
       errorMsg.style.display = 'none';
 
       if (!fecha || !programa) return;
+
+      // Validar formato estricto aaaa-mm-dd y rango del evento
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(fecha)) return;
 
       const [y, m, d] = fecha.split('-');
       const fechaObj = new Date(y, m - 1, d);
@@ -382,9 +435,29 @@
       }
     }
 
+    document.getElementById('fecha').addEventListener('input', evaluarCondicionesGuardado);
     document.getElementById('fecha').addEventListener('change', evaluarCondicionesGuardado);
     document.getElementById('horaInicio').addEventListener('change', evaluarCondicionesGuardado);
     document.getElementById('horaFin').addEventListener('change', evaluarCondicionesGuardado);
+
+    // Botón de Exportar a CSV
+    document.getElementById('btnExport').addEventListener('click', () => {
+      if (reservasGlobales.length === 0) {
+        mostrarModal('No hay registros disponibles para exportar en este momento.', 'error');
+        return;
+      }
+      let csvContent = "data:text/csv;charset=utf-8,Cliente,Programa,Fecha,Hora Inicio,Hora Fin\n";
+      reservasGlobales.forEach(r => {
+        csvContent += `"${r.cliente}","${r.programa}","${r.fecha}","${r.horaInicio}","${r.horaFin}"\n`;
+      });
+      let encodedUri = encodeURI(csvContent);
+      let link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", "registros_enferiados_2026.csv");
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    });
 
     document.getElementById('registroForm').addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -405,17 +478,11 @@
 
       try {
         await fetch(API_URL, { method: 'POST', body: JSON.stringify(datos) });
-        // Lanzamos la notificación flotante de éxito
-        mostrarAlerta('Activación agendada exitosamente.', 'success');
-        
-        // Retrasamos la recarga de la página 3 segundos para que el usuario pueda leer la notificación
-        setTimeout(() => {
-          window.location.reload(); 
-        }, 3000);
-
+        mostrarModal('Activación agendada y registrada con éxito en el sistema.', 'success', () => {
+          window.location.reload();
+        });
       } catch (error) {
-        // Lanzamos la notificación flotante de error
-        mostrarAlerta('Error de red al conectar con la base de datos.', 'error');
+        mostrarModal('Error de red al intentar comunicarse con la base de datos.', 'error');
         btn.disabled = false;
       } finally {
         loader.style.display = 'none';
