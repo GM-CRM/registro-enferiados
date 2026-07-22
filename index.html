@@ -9,6 +9,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
 <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js'></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 <style>
   :root{
     --void-1:#05010f;
@@ -162,12 +164,37 @@
   }
   label:first-of-type{margin-top:0;}
 
+  .label-row{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:16px;margin-bottom:7px;}
+  .label-row label{margin:0;}
+  .cupo-badge{
+    font-family:var(--font-mono);font-size:.66rem;letter-spacing:.4px;font-weight:700;
+    padding:4px 10px;border-radius:99px;color:var(--cyan);
+    background:rgba(34,236,255,.08);border:1px solid var(--cyan-soft);
+    display:none;white-space:nowrap;text-transform:none;
+  }
+
   .field-icon{position:relative;}
   .field-icon svg{
     position:absolute;left:14px;top:50%;transform:translateY(-50%);
     width:16px;height:16px;color:var(--text-faint);pointer-events:none;
   }
   .field-icon input{padding-left:40px;}
+
+  .autocomplete-wrap{position:relative;}
+  .autocomplete-list{
+    display:none;position:absolute;left:0;right:0;top:calc(100% + 6px);z-index:50;
+    max-height:230px;overflow-y:auto;
+    background:var(--panel-solid);border:1px solid var(--border-soft);border-radius:var(--r-sm);
+    box-shadow:0 18px 40px rgba(0,0,0,.6);padding:6px;
+  }
+  .autocomplete-list.show{display:block;}
+  .autocomplete-item{
+    padding:10px 12px;border-radius:8px;cursor:pointer;transition:background .15s ease;
+  }
+  .autocomplete-item .ac-title{font-size:.85rem;font-weight:600;color:var(--text);}
+  .autocomplete-item .ac-sub{font-size:.72rem;color:var(--text-faint);margin-top:2px;}
+  .autocomplete-item:hover,.autocomplete-item.active{background:rgba(34,236,255,.1);}
+  .autocomplete-empty{padding:12px;font-size:.8rem;color:var(--text-faint);text-align:center;}
 
   input,select{
     width:100%;padding:13px 14px;border-radius:var(--r-sm);
@@ -200,6 +227,18 @@
   }
   .error-msg svg{width:16px;height:16px;flex-shrink:0;margin-top:2px;color:var(--danger);}
 
+  .ticket-card{
+    display:none;flex-direction:column;gap:9px;margin-top:18px;
+    padding:16px 18px;border-radius:var(--r-md);
+    background:rgba(255,255,255,.03);border:1px dashed var(--border-soft);
+  }
+  .ticket-row{display:flex;justify-content:space-between;align-items:baseline;gap:14px;}
+  .ticket-row span{
+    color:var(--text-faint);font-family:var(--font-mono);
+    font-size:.66rem;letter-spacing:.6px;text-transform:uppercase;flex-shrink:0;
+  }
+  .ticket-row b{color:var(--text);font-weight:700;font-size:.82rem;text-align:right;}
+
   button[type="submit"]{
     width:100%;margin-top:26px;padding:16px;border:none;border-radius:var(--r-sm);
     font-family:var(--font-display);font-weight:700;font-size:.95rem;
@@ -225,6 +264,12 @@
 
   .calendar-hint{color:var(--text-faint);font-size:.76rem;line-height:1.5;margin:-4px 0 2px;}
   .calendar-hint b{color:var(--text-dim);}
+
+  .calendar-filters{display:flex;gap:10px;flex-wrap:wrap;}
+  .filter-input{
+    flex:1;min-width:140px;padding:9px 12px;font-size:.78rem;
+  }
+  .filter-input:focus{box-shadow:0 0 0 2px var(--cyan-soft);}
 
   #calendar{width:100%;}
   .fc{--fc-border-color:rgba(255,255,255,.08);}
@@ -256,6 +301,11 @@
   }
   .btn-export svg{width:16px;height:16px;}
   .btn-export:hover{background:var(--cyan);color:#05010f;box-shadow:0 8px 24px rgba(34,236,255,.3);}
+
+  .export-row{display:flex;gap:10px;}
+  .export-row .btn-export{flex:1;}
+  .btn-export-magenta{background:rgba(255,46,135,.08);border-color:var(--magenta-soft);color:var(--magenta);}
+  .btn-export-magenta:hover{background:var(--magenta);color:#05010f;box-shadow:0 8px 24px rgba(255,46,135,.3);}
 
   footer.credit{text-align:center;color:var(--text-faint);font-family:var(--font-mono);
     font-size:.68rem;letter-spacing:.5px;margin-top:44px;}
@@ -356,18 +406,21 @@
         <input type="text" id="vendedor" required placeholder="Nombre del asesor...">
 
         <label>Cliente (clave, comercial o fiscal)</label>
-        <div class="field-icon">
+        <div class="field-icon autocomplete-wrap">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-          <input list="listaClientes" id="clienteInput" required placeholder="Escribe para buscar...">
+          <input type="text" id="clienteInput" required autocomplete="off" placeholder="Escribe para buscar...">
+          <div id="clienteDropdown" class="autocomplete-list"></div>
         </div>
-        <datalist id="listaClientes"></datalist>
 
         <label>Paquete publicitario</label>
         <select id="paquete" required>
           <option value="">Cargando paquetes...</option>
         </select>
 
-        <label>Programa especial</label>
+        <div class="label-row">
+          <label>Programa especial</label>
+          <span class="cupo-badge" id="cupoBadge"></span>
+        </div>
         <select id="programa" required>
           <option value="">Selecciona un programa...</option>
           <option value="Los 40 - Playlist">Los 40 - Playlist (3:00pm - 4:00pm)</option>
@@ -399,6 +452,14 @@
           <span id="errorMsgText"></span>
         </div>
 
+        <div id="ticketResumen" class="ticket-card" style="display:none;">
+          <div class="ticket-row"><span>Cliente</span><b id="ticketCliente">—</b></div>
+          <div class="ticket-row"><span>Paquete</span><b id="ticketPaquete">—</b></div>
+          <div class="ticket-row"><span>Programa</span><b id="ticketPrograma">—</b></div>
+          <div class="ticket-row"><span>Fecha</span><b id="ticketFecha">—</b></div>
+          <div class="ticket-row"><span>Horario</span><b id="ticketHorario">—</b></div>
+        </div>
+
         <button type="submit" id="btnSubmit" disabled>Confirmar registro</button>
         <div id="loading" class="loader">Guardando en la base de datos...</div>
       </form>
@@ -414,11 +475,29 @@
         <span class="stat-chip" id="statChip">0 registradas</span>
       </div>
       <p class="calendar-hint">Elige un <b>programa especial</b> para resaltar sus días disponibles, luego haz clic en un día para llenar la fecha automáticamente.</p>
+      <div class="calendar-filters">
+        <select id="filtroPrograma" class="filter-input">
+          <option value="">Todos los programas</option>
+          <option value="Los 40 - Playlist">Los 40 - Playlist</option>
+          <option value="VOX - Peace and Vox">VOX - Peace and Vox</option>
+          <option value="Ke Buena - Las Tóxicas">Ke Buena - Las Tóxicas</option>
+          <option value="Los 40 - Aesthetic">Los 40 - Aesthetic</option>
+          <option value="Ke Buena - Ke Buen Rollo">Ke Buena - Ke Buen Rollo</option>
+          <option value="W Radio - Táctica 100.1">W Radio - Táctica 100.1</option>
+        </select>
+        <input type="text" id="filtroVendedor" class="filter-input" placeholder="Filtrar por vendedor...">
+      </div>
       <div id="calendar"></div>
-      <button type="button" id="btnExport" class="btn-export">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-        Exportar listado a CSV
-      </button>
+      <div class="export-row">
+        <button type="button" id="btnExport" class="btn-export">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          CSV
+        </button>
+        <button type="button" id="btnExportPdf" class="btn-export btn-export-magenta">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><polyline points="14 2 14 8 20 8"/></svg>
+          PDF
+        </button>
+      </div>
     </section>
 
   </div>
@@ -432,6 +511,7 @@
 
   let reservasGlobales = [];
   let paquetesGlobales = [];
+  let clientesGlobales = [];
   let calendar;
 
   const reglasProgramas = {
@@ -542,7 +622,94 @@
     }, 3200);
   }
 
+  // ---------- Autocomplete de cliente ----------
+  let acIndex = -1;
+  let acResultados = [];
+
+  function renderClienteDropdown(filtro) {
+    const dropdown = document.getElementById('clienteDropdown');
+    acIndex = -1;
+    const texto = filtro.trim().toLowerCase();
+
+    if (!texto) { dropdown.classList.remove('show'); dropdown.innerHTML = ''; return; }
+
+    acResultados = clientesGlobales.filter(c =>
+      (c.clave || '').toLowerCase().includes(texto) ||
+      (c.comercial || '').toLowerCase().includes(texto) ||
+      (c.fiscal || '').toLowerCase().includes(texto)
+    ).slice(0, 8);
+
+    if (acResultados.length === 0) {
+      dropdown.innerHTML = '<div class="autocomplete-empty">Sin coincidencias</div>';
+      dropdown.classList.add('show');
+      return;
+    }
+
+    dropdown.innerHTML = acResultados.map((c, i) => `
+      <div class="autocomplete-item" data-index="${i}">
+        <div class="ac-title">${c.clave} — ${c.comercial}</div>
+        <div class="ac-sub">${c.fiscal}</div>
+      </div>`).join('');
+    dropdown.classList.add('show');
+
+    dropdown.querySelectorAll('.autocomplete-item').forEach(item => {
+      item.addEventListener('click', () => seleccionarCliente(parseInt(item.dataset.index)));
+    });
+  }
+
+  function seleccionarCliente(i) {
+    const c = acResultados[i];
+    if (!c) return;
+    const input = document.getElementById('clienteInput');
+    input.value = `${c.clave} | ${c.comercial} | ${c.fiscal}`;
+    document.getElementById('clienteDropdown').classList.remove('show');
+    actualizarProgreso();
+  }
+
+  document.getElementById('clienteInput').addEventListener('input', (e) => {
+    renderClienteDropdown(e.target.value);
+    actualizarProgreso();
+  });
+
+  document.getElementById('clienteInput').addEventListener('keydown', (e) => {
+    const dropdown = document.getElementById('clienteDropdown');
+    const items = dropdown.querySelectorAll('.autocomplete-item');
+    if (!dropdown.classList.contains('show') || items.length === 0) return;
+
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      acIndex = Math.min(acIndex + 1, items.length - 1);
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      acIndex = Math.max(acIndex - 1, 0);
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      if (acIndex >= 0) seleccionarCliente(acIndex);
+      return;
+    } else if (e.key === 'Escape') {
+      dropdown.classList.remove('show');
+      return;
+    } else {
+      return;
+    }
+    items.forEach(it => it.classList.remove('active'));
+    items[acIndex].classList.add('active');
+    items[acIndex].scrollIntoView({ block: 'nearest' });
+  });
+
+  document.addEventListener('click', (e) => {
+    const wrap = document.getElementById('clienteInput').closest('.autocomplete-wrap');
+    if (wrap && !wrap.contains(e.target)) {
+      document.getElementById('clienteDropdown').classList.remove('show');
+    }
+  });
+
   document.addEventListener('DOMContentLoaded', async () => {
+    try {
+      const vendedorGuardado = localStorage.getItem('enferiados_vendedor');
+      if (vendedorGuardado) document.getElementById('vendedor').value = vendedorGuardado;
+    } catch (e) { /* almacenamiento no disponible en este entorno */ }
+
     const calendarEl = document.getElementById('calendar');
     calendar = new FullCalendar.Calendar(calendarEl, {
       initialView: 'dayGridMonth',
@@ -583,12 +750,7 @@
       const response = await fetch(API_URL);
       const data = await response.json();
 
-      const datalist = document.getElementById('listaClientes');
-      data.clientes.forEach(c => {
-        let option = document.createElement('option');
-        option.value = `${c.clave} | ${c.comercial} | ${c.fiscal}`;
-        datalist.appendChild(option);
-      });
+      clientesGlobales = data.clientes;
 
       paquetesGlobales = data.paquetes;
       const selectPaquete = document.getElementById('paquete');
@@ -607,8 +769,23 @@
       }));
 
       document.getElementById('statChip').textContent = `${reservasGlobales.length} registradas`;
+      renderEventosCalendario();
 
-      reservasGlobales.forEach(r => {
+    } catch (error) {
+      console.error("Error cargando API:", error);
+    }
+  });
+
+  function renderEventosCalendario() {
+    if (!calendar) return;
+    calendar.getEvents().forEach(ev => ev.remove());
+
+    const progF = document.getElementById('filtroPrograma').value;
+    const vendF = document.getElementById('filtroVendedor').value.trim().toLowerCase();
+
+    reservasGlobales
+      .filter(r => (!progF || r.programa === progF) && (!vendF || (r.vendedor || '').toLowerCase().includes(vendF)))
+      .forEach(r => {
         calendar.addEvent({
           title: `${r.programa} (${r.cliente.split('|')[1]?.trim() || 'Cliente'})`,
           start: `${r.fecha}T${r.horaInicio}`,
@@ -616,11 +793,10 @@
           color: '#ff2e87'
         });
       });
+  }
 
-    } catch (error) {
-      console.error("Error cargando API:", error);
-    }
-  });
+  document.getElementById('filtroPrograma').addEventListener('change', renderEventosCalendario);
+  document.getElementById('filtroVendedor').addEventListener('input', renderEventosCalendario);
 
   function actualizarFechasDisponibles(programa) {
     const selectFecha = document.getElementById('fecha');
@@ -689,18 +865,70 @@
     }
   }
 
+  function actualizarCupos(programa) {
+    const badge = document.getElementById('cupoBadge');
+    if (!programa || !reglasProgramas[programa]) { badge.style.display = 'none'; return; }
+
+    const reglas = reglasProgramas[programa];
+    let total = 0;
+    let inicio = new Date(2026, 7, 7);
+    let fin = new Date(2026, 7, 30);
+    let current = new Date(inicio);
+    while (current <= fin) {
+      if (reglas.dias.includes(current.getDay())) total++;
+      current.setDate(current.getDate() + 1);
+    }
+
+    const ocupadas = new Set(reservasGlobales.filter(r => r.programa === programa).map(r => r.fecha)).size;
+    const libres = Math.max(total - ocupadas, 0);
+    badge.textContent = `${libres}/${total} fechas libres`;
+    badge.style.display = 'inline-block';
+  }
+
   document.getElementById('programa').addEventListener('change', function(e) {
     const prog = e.target.value;
     actualizarFechasDisponibles(prog);
     actualizarOpcionesDeHora(prog);
+    actualizarCupos(prog);
     evaluarCondicionesGuardado();
   });
+
+  function actualizarTicket() {
+    const ticket = document.getElementById('ticketResumen');
+    const cliente = document.getElementById('clienteInput').value.trim();
+    const paqueteSel = document.getElementById('paquete').value;
+    const programa = document.getElementById('programa').value;
+    const fecha = document.getElementById('fecha').value;
+    const hInicio = document.getElementById('horaInicio').value;
+    const hFin = document.getElementById('horaFin').value;
+
+    if (!cliente && !programa) { ticket.style.display = 'none'; return; }
+    ticket.style.display = 'flex';
+
+    document.getElementById('ticketCliente').textContent = cliente ? (cliente.split('|')[1]?.trim() || cliente) : '—';
+
+    const paqueteInfo = paquetesGlobales.find(p => p.nombre === paqueteSel);
+    document.getElementById('ticketPaquete').textContent = paqueteSel
+      ? `${paqueteSel} (${formatearMonto(paqueteInfo ? paqueteInfo.precio : '')})` : '—';
+
+    document.getElementById('ticketPrograma').textContent = programa || '—';
+
+    if (fecha) {
+      const [yy, mm, dd] = fecha.split('-').map(Number);
+      document.getElementById('ticketFecha').textContent = formatearFechaLabel(new Date(yy, mm - 1, dd));
+    } else {
+      document.getElementById('ticketFecha').textContent = '—';
+    }
+
+    document.getElementById('ticketHorario').textContent = (hInicio && hFin) ? `${hInicio} – ${hFin}` : '—';
+  }
 
   function actualizarProgreso() {
     const campos = ['vendedor', 'clienteInput', 'paquete', 'programa', 'fecha', 'horaInicio', 'horaFin'];
     const llenos = campos.filter(id => document.getElementById(id).value.trim() !== '').length;
     const pct = Math.round((llenos / campos.length) * 100);
     document.getElementById('progressFill').style.width = pct + '%';
+    actualizarTicket();
   }
 
   function evaluarCondicionesGuardado() {
@@ -756,7 +984,6 @@
   }
 
   document.getElementById('vendedor').addEventListener('input', actualizarProgreso);
-  document.getElementById('clienteInput').addEventListener('input', actualizarProgreso);
   document.getElementById('paquete').addEventListener('change', actualizarProgreso);
   document.getElementById('fecha').addEventListener('change', evaluarCondicionesGuardado);
   document.getElementById('horaInicio').addEventListener('change', evaluarCondicionesGuardado);
@@ -786,6 +1013,42 @@
     mostrarToast(`CSV descargado (${reservasGlobales.length} registros).`, 'ok');
   });
 
+  document.getElementById('btnExportPdf').addEventListener('click', () => {
+    if (reservasGlobales.length === 0) {
+      mostrarModal('No hay registros disponibles para exportar en este momento.', 'error');
+      return;
+    }
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    const mapaPrecios = {};
+    paquetesGlobales.forEach(p => { mapaPrecios[p.nombre] = p.precio; });
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(16);
+    doc.text('ENFERIADOS 2026 — Reporte de Activaciones', 14, 17);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9);
+    doc.setTextColor(120);
+    doc.text("GlobalMedia · Jackson's FENAPO · 7 al 30 de agosto de 2026", 14, 23);
+
+    const filas = reservasGlobales.map(r => {
+      const monto = mapaPrecios.hasOwnProperty(r.paquete) ? formatearMonto(mapaPrecios[r.paquete]) : 'N/D';
+      return [r.vendedor || '', r.cliente, r.paquete || '', monto, r.programa, r.fecha, r.horaInicio, r.horaFin];
+    });
+
+    doc.autoTable({
+      head: [['Vendedor', 'Cliente', 'Paquete', 'Monto', 'Programa', 'Fecha', 'Inicio', 'Fin']],
+      body: filas,
+      startY: 29,
+      styles: { fontSize: 7, cellPadding: 3 },
+      headStyles: { fillColor: [21, 11, 44], textColor: 255 },
+      alternateRowStyles: { fillColor: [245, 245, 250] }
+    });
+
+    doc.save('reporte_enferiados_2026.pdf');
+    mostrarToast(`PDF generado (${reservasGlobales.length} registros).`, 'ok');
+  });
+
   document.getElementById('registroForm').addEventListener('submit', async (e) => {
     e.preventDefault();
 
@@ -805,6 +1068,7 @@
 
     try {
       await fetch(API_URL, { method: 'POST', body: JSON.stringify(datos) });
+      try { localStorage.setItem('enferiados_vendedor', datos.vendedor); } catch (e) { /* almacenamiento no disponible */ }
       mostrarModal('Activación agendada y registrada con éxito en el sistema.', 'success', () => {
         window.location.reload();
       });
