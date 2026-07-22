@@ -272,7 +272,10 @@
   .filter-input:focus{box-shadow:0 0 0 2px var(--cyan-soft);}
 
   #calendar{width:100%;}
-  .fc{--fc-border-color:rgba(255,255,255,.08);}
+  .fc{--fc-border-color:rgba(255,255,255,.08);--fc-page-bg-color:transparent;--fc-neutral-bg-color:rgba(255,255,255,.04);}
+  .fc-scrollgrid-section-sticky > *{background:transparent !important;}
+  .fc-col-header{background:transparent;}
+  .fc-col-header-cell{background:rgba(255,255,255,.04);}
   .fc-daygrid-day-frame{cursor:default;transition:background .2s ease;}
   .fc-day-available .fc-daygrid-day-frame{cursor:pointer;background:rgba(34,236,255,.07);border-radius:8px;}
   .fc-day-available:hover .fc-daygrid-day-frame{background:rgba(34,236,255,.18);}
