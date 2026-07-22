@@ -11,9 +11,9 @@
       --accent-blue: #00f0ff; 
       --accent-pink: #ff007f;
       --text-main: #ffffff;
+      --bg-dark: #121212;
     }
     
-    /* Fondo premium nocturno */
     body {
       background: radial-gradient(circle at top right, #2a0845, #121212, #0d021c);
       color: var(--text-main);
@@ -23,7 +23,6 @@
       min-height: 100vh;
     }
 
-    /* Efecto Glassmorphism (Cristal) para los paneles */
     .panel, #calendar {
       background: rgba(30, 30, 30, 0.4);
       backdrop-filter: blur(15px);
@@ -39,7 +38,6 @@
       border-top: 4px solid var(--accent-pink);
     }
     
-    /* Tipografía Corporativa */
     h2 { text-align: center; margin-bottom: 30px; font-size: 1.8em; text-transform: uppercase; letter-spacing: 1px; }
     .enferiados-text {
       background: linear-gradient(90deg, var(--accent-pink), var(--accent-blue));
@@ -50,7 +48,6 @@
 
     label { display: block; margin-top: 15px; font-size: 0.85em; color: #bbb; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;}
     
-    /* Inputs mejorados */
     input, select {
       width: 100%; padding: 12px; margin-top: 8px; border-radius: 8px;
       border: 1px solid rgba(255,255,255,0.1); 
@@ -61,7 +58,6 @@
     
     .time-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
     
-    /* Botón con Glow */
     button {
       background: linear-gradient(90deg, #1e88e5, var(--accent-blue));
       color: #000; font-weight: 900; border: none; text-transform: uppercase; letter-spacing: 1px;
@@ -74,7 +70,6 @@
     .loader { display: none; text-align: center; margin-top: 20px; color: var(--accent-yellow); font-size: 0.9em; font-weight: bold;}
     .error-msg { display: none; background: rgba(255, 0, 0, 0.1); border: 1px solid #ff4d4d; border-radius: 8px; padding: 10px; color: #ff4d4d; font-size: 0.85em; margin-top: 20px; text-align: center; font-weight: bold; }
     
-    /* Calendario adaptado a tema oscuro premium */
     #calendar { max-width: 500px; width: 100%; padding: 25px; }
     .fc-theme-standard td, .fc-theme-standard th { border-color: rgba(255,255,255,0.1); }
     .fc .fc-toolbar-title { font-size: 1.3em; color: var(--text-main); font-weight: 700; }
@@ -83,9 +78,67 @@
     .fc .fc-button-primary:not(:disabled).fc-button-active { background-color: var(--accent-blue); color: #000; }
     .fc-list-event:hover td { background-color: rgba(255,255,255,0.05); }
     .fc-list-day-cushion { background-color: rgba(0,0,0,0.3) !important; }
+
+    /* =========================================
+       NUEVO: ESTILOS DE LA ALERTA FLOTANTE
+       ========================================= */
+    .custom-alert {
+      position: fixed;
+      top: 30px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-20px);
+      background: rgba(20, 20, 20, 0.85);
+      backdrop-filter: blur(15px);
+      -webkit-backdrop-filter: blur(15px);
+      padding: 18px 30px;
+      border-radius: 12px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      z-index: 9999;
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+
+    .custom-alert.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+      pointer-events: all;
+    }
+
+    .custom-alert.success {
+      border-left: 5px solid var(--accent-blue);
+      border-right: 1px solid rgba(0, 240, 255, 0.2);
+      border-top: 1px solid rgba(0, 240, 255, 0.2);
+      border-bottom: 1px solid rgba(0, 240, 255, 0.2);
+    }
+    .custom-alert.success .icon { color: var(--accent-blue); }
+
+    .custom-alert.error {
+      border-left: 5px solid var(--accent-pink);
+      border-right: 1px solid rgba(255, 0, 127, 0.2);
+      border-top: 1px solid rgba(255, 0, 127, 0.2);
+      border-bottom: 1px solid rgba(255, 0, 127, 0.2);
+    }
+    .custom-alert.error .icon { color: var(--accent-pink); }
+
+    .custom-alert .icon { font-size: 1.5em; }
+    .custom-alert .message { font-size: 0.95em; color: #fff; }
   </style>
 </head>
 <body>
+
+  <!-- =========================================
+       NUEVO: CONTENEDOR DE LA ALERTA FLOTANTE
+       ========================================= -->
+  <div id="customAlert" class="custom-alert">
+    <div id="alertIcon" class="icon"></div>
+    <div id="alertMessage" class="message"></div>
+  </div>
 
   <div class="panel">
     <h2>Registro <span class="enferiados-text">ENFERIADOS</span> 2026</h2>
@@ -117,7 +170,6 @@
       <label>Fecha de Activación</label>
       <input type="date" id="fecha" required min="2026-08-07" max="2026-08-30">
 
-      <!-- AQUÍ ESTÁ LA SOLUCIÓN: Cambiamos de 'input time' a 'select' para inyectar solo las horas permitidas -->
       <div class="time-grid">
         <div>
           <label>Hora Inicio</label>
@@ -136,7 +188,7 @@
       <div id="errorMsg" class="error-msg"></div>
       
       <button type="submit" id="btnSubmit" disabled>Confirmar Registro</button>
-      <div id="loading" class="loader">Validando disponibilidad en el servidor...</div>
+      <div id="loading" class="loader">Guardando en la base de datos...</div>
     </form>
   </div>
 
@@ -149,15 +201,42 @@
     let reservasGlobales = [];
     let calendar;
 
-    // Diccionario de reglas operativas (formato 24h)
     const reglasProgramas = {
-      "Los 40 - Playlist": { min: 15, max: 16 },
-      "VOX - Peace and Vox": { min: 17, max: 20 },
-      "Ke Buena - Las Tóxicas": { min: 15, max: 19 },
-      "Los 40 - Aesthetic": { min: 16, max: 18 },
-      "Ke Buena - Ke Buen Rollo": { min: 13, max: 15 },
-      "W Radio - Táctica 100.1": { min: 15, max: 17 }
+      "Los 40 - Playlist": { min: 15, max: 16, dias: [1, 2, 3, 4, 5] },
+      "VOX - Peace and Vox": { min: 17, max: 20, dias: [1, 2, 3, 4, 5] },
+      "Ke Buena - Las Tóxicas": { min: 15, max: 19, dias: [1, 2, 3, 4, 5, 6] },
+      "Los 40 - Aesthetic": { min: 16, max: 18, dias: [1, 2, 3, 4, 5] },
+      "Ke Buena - Ke Buen Rollo": { min: 13, max: 15, dias: [1, 2, 3, 4, 5] },
+      "W Radio - Táctica 100.1": { min: 15, max: 17, dias: [1, 2, 3, 4, 5] }
     };
+
+    // =========================================
+    // NUEVO: FUNCIÓN PARA MOSTRAR LA ALERTA FLOTANTE
+    // =========================================
+    function mostrarAlerta(mensaje, tipo) {
+      const alerta = document.getElementById('customAlert');
+      const icono = document.getElementById('alertIcon');
+      const texto = document.getElementById('alertMessage');
+
+      // Limpiar clases previas
+      alerta.className = 'custom-alert show';
+      
+      if (tipo === 'success') {
+        alerta.classList.add('success');
+        icono.innerHTML = '✔';
+      } else {
+        alerta.classList.add('error');
+        icono.innerHTML = '✖';
+      }
+
+      texto.innerHTML = mensaje;
+
+      // Ocultar automáticamente después de 4 segundos
+      setTimeout(() => {
+        alerta.classList.remove('show');
+      }, 4000);
+    }
+
 
     function formatearHora(horaCruda) {
       if (!horaCruda) return "00:00";
@@ -220,12 +299,10 @@
       }
     });
 
-    // Lógica para poblar dinámicamente los menús desplegables de hora
     function actualizarOpcionesDeHora(programa) {
       const hInicio = document.getElementById('horaInicio');
       const hFin = document.getElementById('horaFin');
       
-      // Limpiar opciones previas
       hInicio.innerHTML = '<option value="">--:--</option>';
       hFin.innerHTML = '<option value="">--:--</option>';
 
@@ -237,7 +314,6 @@
       hInicio.disabled = false; hFin.disabled = false;
       const limites = reglasProgramas[programa];
 
-      // Inyectar bloques de 30 minutos estrictamente dentro del rango permitido
       for (let i = limites.min; i <= limites.max; i++) {
         let horaStr = i.toString().padStart(2, '0');
         if (i < limites.max) {
@@ -246,7 +322,6 @@
           hFin.add(new Option(`${horaStr}:00`, `${horaStr}:00`));
           hFin.add(new Option(`${horaStr}:30`, `${horaStr}:30`));
         } else {
-          // Asegurar que la hora límite máxima esté disponible
           hInicio.add(new Option(`${horaStr}:00`, `${horaStr}:00`));
           hFin.add(new Option(`${horaStr}:00`, `${horaStr}:00`));
         }
@@ -270,7 +345,21 @@
       btn.disabled = true;
       errorMsg.style.display = 'none';
 
-      if (!fecha || !hInicio || !hFin || !programa) return;
+      if (!fecha || !programa) return;
+
+      const [y, m, d] = fecha.split('-');
+      const fechaObj = new Date(y, m - 1, d);
+      const diaSemana = fechaObj.getDay(); 
+
+      if (!reglasProgramas[programa].dias.includes(diaSemana)) {
+        let diasNombres = reglasProgramas[programa].dias.length === 6 ? "Lunes a Sábado" : "Lunes a Viernes";
+        let nombrePrograma = programa.split('-')[1]?.trim() || programa;
+        errorMsg.innerHTML = `⛔ <b>Día Inválido:</b> El programa "${nombrePrograma}" solo opera de ${diasNombres}.`;
+        errorMsg.style.display = 'block';
+        return;
+      }
+
+      if (!hInicio || !hFin) return;
 
       if (hInicio >= hFin) {
         errorMsg.innerHTML = "⚠️ <b>Horario Inválido:</b> La hora de inicio debe ser menor a la hora de fin.";
@@ -278,7 +367,6 @@
         return;
       }
 
-      // Evaluar colisiones de empalme
       const hayColision = reservasGlobales.some(r => {
         if (r.fecha === fecha) {
           return (hInicio < r.horaFin && hFin > r.horaInicio);
@@ -290,7 +378,7 @@
         errorMsg.innerHTML = "⛔ <b>BLOQUEADO:</b> El horario seleccionado choca con una activación existente en el calendario.";
         errorMsg.style.display = 'block';
       } else {
-        btn.disabled = false; // Todo correcto, liberar botón
+        btn.disabled = false;
       }
     }
 
@@ -317,10 +405,17 @@
 
       try {
         await fetch(API_URL, { method: 'POST', body: JSON.stringify(datos) });
-        alert('✅ Activación agendada y registrada con éxito.');
-        window.location.reload(); 
+        // Lanzamos la notificación flotante de éxito
+        mostrarAlerta('Activación agendada exitosamente.', 'success');
+        
+        // Retrasamos la recarga de la página 3 segundos para que el usuario pueda leer la notificación
+        setTimeout(() => {
+          window.location.reload(); 
+        }, 3000);
+
       } catch (error) {
-        alert('❌ Error de red al intentar comunicarse con Google Sheets.');
+        // Lanzamos la notificación flotante de error
+        mostrarAlerta('Error de red al conectar con la base de datos.', 'error');
         btn.disabled = false;
       } finally {
         loader.style.display = 'none';
