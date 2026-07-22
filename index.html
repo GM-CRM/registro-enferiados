@@ -223,8 +223,15 @@
     padding:6px 12px;border-radius:99px;white-space:nowrap;
   }
 
+  .calendar-hint{color:var(--text-faint);font-size:.76rem;line-height:1.5;margin:-4px 0 2px;}
+  .calendar-hint b{color:var(--text-dim);}
+
   #calendar{width:100%;}
   .fc{--fc-border-color:rgba(255,255,255,.08);}
+  .fc-daygrid-day-frame{cursor:default;transition:background .2s ease;}
+  .fc-day-available .fc-daygrid-day-frame{cursor:pointer;background:rgba(34,236,255,.07);border-radius:8px;}
+  .fc-day-available:hover .fc-daygrid-day-frame{background:rgba(34,236,255,.18);}
+  .fc-day-available .fc-daygrid-day-number{color:var(--cyan) !important;font-weight:700;}
   .fc .fc-toolbar-title{font-family:var(--font-display);font-size:1.1em;color:var(--text);font-weight:700;text-transform:uppercase;}
   .fc .fc-button-primary{
     background:transparent;border:1px solid var(--cyan-soft);color:var(--cyan);
@@ -282,6 +289,22 @@
     width:100%;box-shadow:0 10px 26px rgba(255,46,135,.3);transition:.25s;
   }
   .modal-box button:hover{transform:translateY(-2px);}
+
+  /* ---------- Toasts ---------- */
+  .toast-stack{
+    position:fixed;bottom:22px;right:22px;z-index:11000;
+    display:flex;flex-direction:column;gap:10px;max-width:min(320px,80vw);
+  }
+  .toast{
+    padding:13px 16px;border-radius:var(--r-sm);font-size:.82rem;font-weight:600;
+    background:var(--panel-solid);border:1px solid var(--border-soft);color:var(--text);
+    box-shadow:0 14px 34px rgba(0,0,0,.55);
+    opacity:0;transform:translateY(12px);transition:all .3s cubic-bezier(.4,0,.2,1);
+    font-family:var(--font-body);line-height:1.4;
+  }
+  .toast.show{opacity:1;transform:translateY(0);}
+  .toast-ok{border-color:var(--cyan-soft);}
+  .toast-warn{border-color:var(--magenta-soft);}
 </style>
 </head>
 <body>
@@ -355,9 +378,10 @@
           <option value="W Radio - Táctica 100.1">W Radio - Táctica 100.1 (3:00pm - 5:00pm)</option>
         </select>
 
-        <label>Fecha de activación (aaaa-mm-dd)</label>
-        <input type="text" list="listaFechas" id="fecha" required placeholder="Selecciona o escribe aaaa-mm-dd..." disabled>
-        <datalist id="listaFechas"></datalist>
+        <label>Fecha de activación</label>
+        <select id="fecha" required disabled>
+          <option value="">Selecciona un programa primero...</option>
+        </select>
 
         <div class="time-grid">
           <div>
@@ -389,6 +413,7 @@
         </h2>
         <span class="stat-chip" id="statChip">0 registradas</span>
       </div>
+      <p class="calendar-hint">Elige un <b>programa especial</b> para resaltar sus días disponibles, luego haz clic en un día para llenar la fecha automáticamente.</p>
       <div id="calendar"></div>
       <button type="button" id="btnExport" class="btn-export">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
@@ -481,6 +506,42 @@
     return n.toLocaleString('es-MX', { style: 'currency', currency: 'MXN', minimumFractionDigits: 0 });
   }
 
+  function formatearFechaLabel(dateObj) {
+    let str = dateObj.toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'long' });
+    return str.charAt(0).toUpperCase() + str.slice(1);
+  }
+
+  function diaEsValidoParaPrograma(dateObj, programa) {
+    if (!programa || !reglasProgramas[programa]) return false;
+    const inicio = new Date(2026, 7, 7);
+    const fin = new Date(2026, 7, 30);
+    if (dateObj < inicio || dateObj > fin) return false;
+    return reglasProgramas[programa].dias.includes(dateObj.getDay());
+  }
+
+  function refrescarDisponibilidadCalendario() {
+    if (calendar) calendar.changeView(calendar.view.type);
+  }
+
+  function mostrarToast(mensaje, tipo = 'ok') {
+    let stack = document.getElementById('toastStack');
+    if (!stack) {
+      stack = document.createElement('div');
+      stack.id = 'toastStack';
+      stack.className = 'toast-stack';
+      document.body.appendChild(stack);
+    }
+    const toast = document.createElement('div');
+    toast.className = 'toast toast-' + tipo;
+    toast.textContent = mensaje;
+    stack.appendChild(toast);
+    requestAnimationFrame(() => toast.classList.add('show'));
+    setTimeout(() => {
+      toast.classList.remove('show');
+      setTimeout(() => toast.remove(), 300);
+    }, 3200);
+  }
+
   document.addEventListener('DOMContentLoaded', async () => {
     const calendarEl = document.getElementById('calendar');
     calendar = new FullCalendar.Calendar(calendarEl, {
@@ -489,7 +550,32 @@
       headerToolbar: { left: 'prev,next', center: 'title', right: 'dayGridMonth,timeGridWeek,listWeek' },
       height: 'auto',
       locale: 'es',
-      noEventsText: 'No hay activaciones registradas'
+      noEventsText: 'No hay activaciones registradas',
+      dayCellClassNames: (arg) => {
+        const programaSel = document.getElementById('programa').value;
+        return diaEsValidoParaPrograma(arg.date, programaSel) ? ['fc-day-available'] : [];
+      },
+      dateClick: (info) => {
+        const programaSel = document.getElementById('programa').value;
+        const selectFecha = document.getElementById('fecha');
+        if (!programaSel) {
+          mostrarToast('Primero selecciona un programa especial.', 'warn');
+          return;
+        }
+        const [y, m, d] = info.dateStr.split('-').map(Number);
+        const dateObj = new Date(y, m - 1, d);
+        if (!diaEsValidoParaPrograma(dateObj, programaSel)) {
+          mostrarToast('Ese día no opera para el programa seleccionado.', 'warn');
+          return;
+        }
+        const opt = Array.from(selectFecha.options).find(o => o.value === info.dateStr);
+        if (opt) {
+          selectFecha.value = info.dateStr;
+          evaluarCondicionesGuardado();
+          mostrarToast('Fecha seleccionada: ' + opt.textContent, 'ok');
+          document.getElementById('registroForm').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }
     });
     calendar.render();
 
@@ -537,18 +623,18 @@
   });
 
   function actualizarFechasDisponibles(programa) {
-    const inputFecha = document.getElementById('fecha');
-    const datalist = document.getElementById('listaFechas');
-
-    datalist.innerHTML = '';
-    inputFecha.value = '';
+    const selectFecha = document.getElementById('fecha');
+    selectFecha.innerHTML = '';
 
     if (!programa || !reglasProgramas[programa]) {
-      inputFecha.disabled = true;
+      selectFecha.disabled = true;
+      selectFecha.innerHTML = '<option value="">Selecciona un programa primero...</option>';
+      refrescarDisponibilidadCalendario();
       return;
     }
 
-    inputFecha.disabled = false;
+    selectFecha.disabled = false;
+    selectFecha.innerHTML = '<option value="">Selecciona una fecha...</option>';
     const reglas = reglasProgramas[programa];
 
     let inicio = new Date(2026, 7, 7);
@@ -565,10 +651,13 @@
 
         let opt = document.createElement('option');
         opt.value = fechaStr;
-        datalist.appendChild(opt);
+        opt.textContent = formatearFechaLabel(new Date(current));
+        selectFecha.appendChild(opt);
       }
       current.setDate(current.getDate() + 1);
     }
+
+    refrescarDisponibilidadCalendario();
   }
 
   function actualizarOpcionesDeHora(programa) {
@@ -669,7 +758,6 @@
   document.getElementById('vendedor').addEventListener('input', actualizarProgreso);
   document.getElementById('clienteInput').addEventListener('input', actualizarProgreso);
   document.getElementById('paquete').addEventListener('change', actualizarProgreso);
-  document.getElementById('fecha').addEventListener('input', evaluarCondicionesGuardado);
   document.getElementById('fecha').addEventListener('change', evaluarCondicionesGuardado);
   document.getElementById('horaInicio').addEventListener('change', evaluarCondicionesGuardado);
   document.getElementById('horaFin').addEventListener('change', evaluarCondicionesGuardado);
@@ -695,6 +783,7 @@
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    mostrarToast(`CSV descargado (${reservasGlobales.length} registros).`, 'ok');
   });
 
   document.getElementById('registroForm').addEventListener('submit', async (e) => {
